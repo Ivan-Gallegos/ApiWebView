@@ -15,3 +15,5 @@ dependencyResolutionManagement {
 
 rootProject.name = "ApiWebView"
 include(":app")
+include(":pokeapi")
+include(":data")

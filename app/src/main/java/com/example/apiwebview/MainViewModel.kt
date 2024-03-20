@@ -6,7 +6,6 @@ import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
 import com.example.data.Repository
-import com.example.pokeapi.PokeService
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
@@ -25,13 +24,7 @@ class MainViewModel(
     }
 
     fun getQueryResponse(query: String) = viewModelScope.launch {
-        repository.getQueryResponse(query).run {
-            if (isSuccessful) {
-                _state.value = state.value.copy(response = body().orEmpty())
-            } else {
-                _state.value = state.value.copy(response = errorBody()?.string().orEmpty())
-            }
-        }
+        _state.value = state.value.copy(response = repository.getQueryResponse(query))
     }
 
 
@@ -39,8 +32,7 @@ class MainViewModel(
         val Factory = viewModelFactory {
             initializer {
                 val application = checkNotNull(this[APPLICATION_KEY])
-                val pokeService = PokeService.getInstance(application)
-                val repo = Repository.getInstance(pokeService)
+                val repo = Repository.getInstance(application)
                 MainViewModel(repo)
             }
         }

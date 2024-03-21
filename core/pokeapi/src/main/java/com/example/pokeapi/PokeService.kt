@@ -25,7 +25,6 @@ interface PokeService {
             instance ?: Cache(application.cacheDir, CACHE_SIZE).let { cache ->
                 val client: OkHttpClient = OkHttpClient().newBuilder()
                     .addInterceptor(HttpLoggingInterceptor(DEFAULT).apply { level = BODY })
-                    .addNetworkInterceptor(CacheInterceptor())
                     .cache(cache)
                     .build()
 

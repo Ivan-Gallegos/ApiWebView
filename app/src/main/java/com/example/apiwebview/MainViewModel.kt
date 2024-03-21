@@ -5,6 +5,7 @@ import androidx.lifecycle.ViewModelProvider.AndroidViewModelFactory.Companion.AP
 import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
+import com.example.data.QueryResponse
 import com.example.data.Repository
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -27,6 +28,20 @@ class MainViewModel(
         _state.value = state.value.copy(response = repository.getQueryResponse(query))
     }
 
+    fun shouldTakeScreenshot(b: Boolean) {
+        _state.value = state.value.copy(shouldTakeScreenshot = b)
+    }
+
+    fun onWebViewUpdate() {
+        if (state.value.response.fromNetwork) {
+            shouldTakeScreenshot(true)
+            _state.value = state.value.copy(
+                response = state.value.response.copy(
+                    fromNetwork = false
+                )
+            )
+        }
+    }
 
     companion object {
         val Factory = viewModelFactory {
@@ -42,5 +57,6 @@ class MainViewModel(
 
 data class MainState(
     val query: String = "",
-    val response: String = "",
+    val response: QueryResponse = QueryResponse(),
+    val shouldTakeScreenshot: Boolean = false,
 )

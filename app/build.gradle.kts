@@ -67,6 +67,8 @@ dependencies {
     debugImplementation("androidx.compose.ui:ui-tooling")
     debugImplementation("androidx.compose.ui:ui-test-manifest")
 
+    implementation(project(":core:domain"))
     implementation(project(":core:data"))
+    implementation(project(":core:model"))
     implementation ("com.google.accompanist:accompanist-permissions:0.34.0")
 }

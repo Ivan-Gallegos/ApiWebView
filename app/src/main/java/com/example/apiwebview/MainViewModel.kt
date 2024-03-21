@@ -6,14 +6,15 @@ import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
 import com.example.data.Repository
-import com.example.model.QueryResponse
+import com.example.domain.GetSearchResponseUseCase
+import com.example.model.SearchResponse
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 
 
 class MainViewModel(
-    private val repository: Repository
+    private val getSearchResponseUseCase: GetSearchResponseUseCase
 ) : ViewModel() {
 
     private val _state: MutableStateFlow<MainState> = MutableStateFlow(MainState())
@@ -25,7 +26,7 @@ class MainViewModel(
     }
 
     fun getQueryResponse(query: String) = viewModelScope.launch {
-        _state.value = state.value.copy(response = repository.getQueryResponse(query))
+        _state.value = state.value.copy(response = getSearchResponseUseCase(query))
     }
 
     fun shouldTakeScreenshot(b: Boolean) {
@@ -48,7 +49,8 @@ class MainViewModel(
             initializer {
                 val application = checkNotNull(this[APPLICATION_KEY])
                 val repo = Repository.getInstance(application)
-                MainViewModel(repo)
+                val getSearchResponseUseCase = GetSearchResponseUseCase(repo)
+                MainViewModel(getSearchResponseUseCase)
             }
         }
     }
@@ -57,6 +59,6 @@ class MainViewModel(
 
 data class MainState(
     val query: String = "",
-    val response: QueryResponse = QueryResponse(),
+    val response: SearchResponse = SearchResponse(),
     val shouldTakeScreenshot: Boolean = false,
 )

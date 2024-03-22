@@ -19,4 +19,7 @@ interface SearchDao {
 
     @Delete
     fun delete(searchEntity: SearchEntity)
+
+    @Query("DELETE FROM searchentity WHERE `query` = :query")
+    fun deleteByQuery(query: String)
 }

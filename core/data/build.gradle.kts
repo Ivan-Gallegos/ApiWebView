@@ -45,4 +45,6 @@ dependencies {
     api(project(":core:database"))
     api(project(":core:model"))
 
+    val workVersion = "2.9.0"
+    implementation("androidx.work:work-runtime-ktx:$workVersion")
 }

@@ -20,7 +20,6 @@ class MainViewModel(
     private val _state: MutableStateFlow<MainState> = MutableStateFlow(MainState())
     val state: StateFlow<MainState> = _state
 
-
     fun onQueryChanged(query: String) {
         _state.value = state.value.copy(query = query)
     }

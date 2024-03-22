@@ -2,6 +2,10 @@ package com.example.data
 
 import android.app.Application
 import android.util.Log
+import androidx.work.OneTimeWorkRequestBuilder
+import androidx.work.WorkManager
+import androidx.work.workDataOf
+import com.example.data.DeleteSearchEntityWorker.Companion.QUERY_KEY
 import com.example.database.SearchDatabase
 import com.example.model.SearchResponse
 import com.example.pokeapi.PokeService
@@ -13,24 +17,27 @@ import java.util.concurrent.TimeUnit
 class Repository private constructor(
     private val pokeService: PokeService,
     private val db: SearchDatabase,
+    private val wm: WorkManager
 ) {
 
     companion object {
         val TAG = this::class.simpleName
         val MAX_AGE_MILLIS: Long = TimeUnit.MINUTES.toMillis(10)
+        val DELETE_DELAY_MILLIS: Long = TimeUnit.MINUTES.toMillis(30)
 
         @Volatile
         private var instance: Repository? = null
 
-        fun getInstance(pokeService: PokeService, db: SearchDatabase) =
+        fun getInstance(pokeService: PokeService, db: SearchDatabase, wm: WorkManager) =
             instance ?: synchronized(this) {
-                instance ?: Repository(pokeService, db).also { instance = it }
+                instance ?: Repository(pokeService, db, wm).also { instance = it }
             }
 
         fun getInstance(application: Application): Repository {
             val pokeService = PokeService.getInstance(application)
             val db = SearchDatabase.getInstance(application)
-            return getInstance(pokeService, db)
+            val wm = WorkManager.getInstance(application)
+            return getInstance(pokeService, db, wm)
         }
     }
 
@@ -58,12 +65,21 @@ class Repository private constructor(
             val response = pokeService.getPokemon(query)
             if (response.isSuccessful) (response.body() ?: "Empty body").also {
                 db.searchDao().insertWithTimeStamp(query, it)
+                scheduleDeletion(query)
             }.let { SearchResponse(it, fromNetwork = true) }
             else SearchResponse(response.errorBody()?.string() ?: "Empty Error Message")
         } catch (e: Exception) {
             Log.e(TAG, e.message, e)
             SearchResponse("An Error Has Occurred")
         }
+    }
+
+    private fun scheduleDeletion(query: String) {
+        val deleteSearchEntityRequest =
+            OneTimeWorkRequestBuilder<DeleteSearchEntityWorker>().setInitialDelay(
+                DELETE_DELAY_MILLIS, TimeUnit.MILLISECONDS
+            ).setInputData(workDataOf(QUERY_KEY to query)).build()
+        wm.enqueue(deleteSearchEntityRequest)
     }
 
 }

@@ -1,6 +1,6 @@
 package com.example.database
 
-import android.app.Application
+import android.content.Context
 import androidx.room.Database
 import androidx.room.Room
 import androidx.room.RoomDatabase
@@ -13,9 +13,9 @@ abstract class SearchDatabase : RoomDatabase() {
         @Volatile
         private var instance: SearchDatabase? = null
 
-        fun getInstance(application: Application): SearchDatabase = instance ?: synchronized(this) {
+        fun getInstance(appContext: Context): SearchDatabase = instance ?: synchronized(this) {
             instance ?: Room.databaseBuilder(
-                application, SearchDatabase::class.java, "search"
+                appContext, SearchDatabase::class.java, "search"
             ).build()
         }
     }
